@@ -38,6 +38,10 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             const Text(
               'Team error_and_error',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
