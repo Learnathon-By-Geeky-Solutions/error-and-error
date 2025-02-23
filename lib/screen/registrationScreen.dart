@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../style/style.dart';
 
@@ -12,14 +12,38 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
 
-  bool _isPasswordVisible = false; // Track visibility for password field
-  bool _isConfirmPasswordVisible = false; // Track visibility for confirm password field
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+  bool _isLoading = false;
+
+  Future<void> _signUp() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+
+      try {
+        final supabase = Supabase.instance.client;
+        await supabase.auth.signUp(
+          email: emailController.text.trim(),
+          password: passwordController.text,
+        );
+
+        // Navigate to success screen
+        Navigator.pushNamed(context, "/success");
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Registration failed: ${e.toString()}")),
+        );
+      }
+
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +60,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  // Method to build background
   Widget _buildBackground(double screenHeight, double screenWidth) {
     return Container(
       height: screenHeight,
@@ -52,7 +75,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  // Method to build the registration form (with validation)
   Widget _buildRegistrationForm(double screenHeight, double screenWidth) {
     return Padding(
       padding: EdgeInsets.only(top: 200),
@@ -66,9 +88,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             key: _formKey,
             child: Column(
               children: [
-                _buildTextField("Full Name", fullNameController, (value) {
+                _buildTextField("Email", emailController, (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your full name';
+                    return 'Please enter your email';
                   }
                   return null;
                 }),
@@ -90,7 +112,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  // Method to build a single text field with validation
   Widget _buildTextField(String label, TextEditingController controller, String? Function(String?) validator) {
     return TextFormField(
       controller: controller,
@@ -99,11 +120,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  // Method to build the password field with visibility toggle
   Widget _buildPasswordField(String label, TextEditingController controller, {bool isConfirm = false}) {
     return TextFormField(
       controller: controller,
-      obscureText: isConfirm ? !_isConfirmPasswordVisible : !_isPasswordVisible, // Toggle visibility for password or confirm password
+      obscureText: isConfirm ? !_isConfirmPasswordVisible : !_isPasswordVisible,
       decoration: InputDecoration(
         labelText: label,
         suffixIcon: IconButton(
@@ -121,15 +141,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             });
           },
         ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.red, width: 1),
-        ),
-        fillColor: Colors.white12,
-        filled: true,
-        contentPadding: EdgeInsets.fromLTRB(20, 10, 10, 20),
-        enabledBorder: const OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.grey, width: 2),
-        ),
         border: OutlineInputBorder(),
         labelStyle: inputTextStyle(),
       ),
@@ -145,7 +156,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  // Method to build the age field with numeric validation
   Widget _buildAgeTextField(String label, TextEditingController controller) {
     return TextFormField(
       controller: controller,
@@ -163,7 +173,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  // Method to build the phone field with additional validation for 11 digits
   Widget _buildPhoneTextField(String label, TextEditingController controller) {
     return TextFormField(
       controller: controller,
@@ -173,7 +182,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         if (value == null || value.isEmpty) {
           return 'Please enter your phone number';
         }
-        // Check if phone number is exactly 11 digits
         String pattern = r'^[0-9]{11}$';
         RegExp regex = RegExp(pattern);
         if (!regex.hasMatch(value)) {
@@ -184,20 +192,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  // Method to build the Sign Up button
   Widget _buildSignUpButton(double screenWidth) {
     return Container(
       height: 50,
-      width: screenWidth * 0.8, // Make button width responsive
-      child: TextButton(
-        onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            // If the form is valid, navigate to the login screen
-            Navigator.pushNamed(context, "/login");
-          }
-        },
-        child: SuccessButtonChild("Sign up"),
+      width: screenWidth * 0.8,
+      decoration: backgroundButtonStyle(), // Apply gradient from style.dart
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _signUp,
+        child: _isLoading
+            ? CircularProgressIndicator(color: Colors.white)
+            : Text("Sign Up", style: TextStyle(color: Colors.white, fontSize: 20)),
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(Colors.transparent), // Transparent background for gradient container
+          elevation: MaterialStateProperty.all(0), // Remove elevation for flat appearance
+          shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
+        ),
       ),
     );
   }
+
 }

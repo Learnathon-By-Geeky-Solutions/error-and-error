@@ -1,0 +1,2 @@
+D:/Learnathon_project_folder/error-and-error/android/app/.cxx/Debug/2b1k342f/x86_64/CMakeFiles/edit_cache.dir
+D:/Learnathon_project_folder/error-and-error/android/app/.cxx/Debug/2b1k342f/x86_64/CMakeFiles/rebuild_cache.dir

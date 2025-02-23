@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../style/style.dart';
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +17,31 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool _isPasswordVisible = false; // Track visibility of password
+  bool _isLoading = false; // Track loading state
+
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+
+      try {
+        final supabase = Supabase.instance.client;
+        await supabase.auth.signInWithPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text,
+        );
+
+        // Navigate to success screen
+        Navigator.pushNamed(context, "/success");
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Login failed: ${e.toString()}")),
+        );
+      }
+
+      setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -33,7 +57,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Method to build background
   Widget _buildBackground(double screenHeight, double screenWidth) {
     return Container(
       height: screenHeight,
@@ -49,7 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Method to build the login form (email, password, and login button)
   Widget _buildLoginForm(double screenHeight, double screenWidth) {
     return Padding(
       padding: EdgeInsets.only(top: 250),
@@ -58,29 +80,25 @@ class _LoginScreenState extends State<LoginScreen> {
         height: screenHeight,
         width: screenWidth,
         child: Padding(
-          padding: EdgeInsets.only(top: 30),
-          child: Padding(
-            padding: EdgeInsets.only(top: 40, left: 20, right: 20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  _buildEmailField(),
-                  SizedBox(height: 10),
-                  _buildPasswordField(),
-                  SizedBox(height: 20),
-                  _buildForgotPassword(),
-                  SizedBox(height: 40),
-                  _buildLoginButton(screenWidth),
-                  SizedBox(height: 20),
-                  _buildSignUpText(),
-                  SizedBox(height: 70),
-                  _buildSocialMediaIcons(),
-                  SizedBox(height: 20),
-                  _buildSocialMediaText(),
-                ],
-              ),
+          padding: EdgeInsets.only(top: 40, left: 20, right: 20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                _buildEmailField(),
+                SizedBox(height: 10),
+                _buildPasswordField(),
+                SizedBox(height: 20),
+                _buildForgotPassword(),
+                SizedBox(height: 40),
+                _buildLoginButton(screenWidth),
+                SizedBox(height: 20),
+                _buildSignUpText(),
+                SizedBox(height: 70),
+                _buildSocialMediaIcons(),
+                SizedBox(height: 20),
+                _buildSocialMediaText(),
+              ],
             ),
           ),
         ),
@@ -88,7 +106,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Method to build the email field with validation
   Widget _buildEmailField() {
     return TextFormField(
       controller: emailController,
@@ -97,17 +114,15 @@ class _LoginScreenState extends State<LoginScreen> {
         if (value == null || value.isEmpty) {
           return 'Please enter an email';
         }
-        // TO DO Auth using Supabase
         return null;
       },
     );
   }
 
-  // Method to build the password field with visibility toggle
   Widget _buildPasswordField() {
     return TextFormField(
       controller: passwordController,
-      obscureText: !_isPasswordVisible, // Toggle the visibility based on _isPasswordVisible
+      obscureText: !_isPasswordVisible,
       decoration: InputDecoration(
         labelText: "Password",
         suffixIcon: IconButton(
@@ -117,18 +132,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           onPressed: () {
             setState(() {
-              _isPasswordVisible = !_isPasswordVisible; // Toggle the password visibility
+              _isPasswordVisible = !_isPasswordVisible;
             });
           },
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.red, width: 1),
-        ),
-        fillColor: Colors.white12,
-        filled: true,
-        contentPadding: EdgeInsets.fromLTRB(20, 10, 10, 20),
-        enabledBorder: const OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.grey, width: 2),
         ),
         border: OutlineInputBorder(),
         labelStyle: inputTextStyle(),
@@ -142,56 +148,49 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Method to build the 'Forgot Password?' button
-  Widget _buildForgotPassword() {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: TextButton(
-        onPressed: () {
-          /// TO DO FORGOT FUNCTION
-        },
-        child: Text(
-          "Forgot Password?",
-          style: inputTextStyle(),
+  Widget _buildLoginButton(double screenWidth) {
+    return Container(
+      height: 55,
+      width: screenWidth * 0.8, // Make button width responsive
+      decoration: backgroundButtonStyle(), // Apply gradient from style.dart
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _login,
+        child: _isLoading
+            ? CircularProgressIndicator(color: Colors.white)
+            : Text("Login", style: TextStyle(color: Colors.white, fontSize: 20)),
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(Colors.transparent), // Transparent background for gradient container
+          elevation: MaterialStateProperty.all(0), // Remove elevation for flat appearance
+          shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
         ),
       ),
     );
   }
 
-  // Method to build the Login button
-  Widget _buildLoginButton(double screenWidth) {
-    return Container(
-      height: 55,
-      width: screenWidth * 0.8, // Responsive width
-      decoration: backgroundButtonStyle(),
-      child: ElevatedButton(
-        onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            // Proceed with login action
-          }
-        },
-        child: Text("Login", style: TextStyle(color: Colors.white, fontSize: 20)),
-        style: elevetedButtonStyle(),
-      ),
-    );
-  }
 
-  // Method to build the 'Don't have an account?' text and sign-up link
   Widget _buildSignUpText() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text("Don't have an account?", style: TextStyle(color: Colors.grey, fontSize: 14)),
-        SizedBox(height: 10),
-        TextButton(onPressed: (){
-          Navigator.pushNamed(context, "/registration");
-        }, child: Text("Sing Up",style: inputTextStyle(),))
-        // Text("Sign up", style: inputTextStyle()),
+        TextButton(
+          onPressed: () => Navigator.pushNamed(context, "/registration"),
+          child: Text("Sign Up", style: inputTextStyle()),
+        ),
       ],
     );
   }
 
-  // Method to build the social media icons
+  Widget _buildForgotPassword() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: () {},
+        child: Text("Forgot Password?", style: inputTextStyle()),
+      ),
+    );
+  }
+
   Widget _buildSocialMediaIcons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -211,7 +210,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Method to build the "Sign in with Social Media" text
   Widget _buildSocialMediaText() {
     return Text(
       "Sign in with Social Media",
