@@ -222,7 +222,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
 class PostCard extends StatefulWidget {
   final Map<String, dynamic> post;
-  PostCard({required this.post});
+  const PostCard({super.key, required this.post});
 
   @override
   _PostCardState createState() => _PostCardState();
