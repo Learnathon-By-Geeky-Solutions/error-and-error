@@ -168,12 +168,18 @@ class _FeedScreenState extends State<FeedScreen> {
             Text('StitchHub', style: TextStyle(fontWeight: FontWeight.bold)),
             Spacer(),
             AnimatedContainer(
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color.fromARGB(167, 255, 255, 255)),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2))],
+              ),
               duration: Duration(milliseconds: 300),
               width: isSearching ? 250 : 0,
               child: TextField(
                 focusNode: searchFocusNode,
                 decoration: InputDecoration(
                   hintText: "Search users or posts...",
+                  hintStyle: TextStyle(color: const Color.fromARGB(157, 255, 255, 255)),
                   border: InputBorder.none,
                 ),
                 onChanged: (value) {
