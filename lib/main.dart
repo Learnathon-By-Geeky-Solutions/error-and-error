@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:google_fonts/google_fonts.dart';
+import 'package:stitch_hub/Screen/homePage/home_page.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -11,37 +12,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Team error_and_error',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primaryColor: Colors.deepPurple,
+        scaffoldBackgroundColor: Colors.grey[100],
+        textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      home: const MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Team error_and_error',
-            ),
-          ],
-        ),
-      ),
+      home: FeedScreen(),
     );
   }
 }
