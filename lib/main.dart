@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:stitch_hub/screen/loginScreen.dart';
 import 'package:stitch_hub/screen/registrationScreen.dart';
-import 'package:stitch_hub/screen/slashScreen.dart';
+import 'package:stitch_hub/screen/splash.dart';
 
 
 void main()=>runApp(MyApp());
